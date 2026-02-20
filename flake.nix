@@ -1,5 +1,5 @@
 {
-  description = "Build truly native applications with ease!";
+  description = "A beginning of an awesome project bootstrapped with github:bleur-org/templates";
 
   inputs = {
     # Stable for keeping thins clean
@@ -8,38 +8,34 @@
     # Fresh and new for testing
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
+    crane.url = "github:ipetkov/crane";
+
     # The flake-utils library
     flake-utils.url = "github:numtide/flake-utils";
-
-    # rust-overlays
-    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = { nixpkgs, flake-utils, rust-overlay, ... }:
-    # @ inputs
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        overlays = [ (import rust-overlay) ];
-        pkgs = import nixpkgs { inherit system overlays; };
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    crane,
+    ...
+  }:
+  # @ inputs
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {inherit system;};
+    in {
+      # Nix script formatter
+      formatter = pkgs.alejandra;
 
-        rustVersion = "latest";
-        rust = pkgs.rust-bin.stable.${rustVersion}.default.override {
-          extensions = [
-            "rustc"
-            "cargo"
-            "rustfmt"
-            "clippy"
-            "rust-analyzer"
-            "rust-src"
-            # "cargo-watch"
-          ];
-        };
+      # Development environment
+      devShells.default = import ./shell.nix {inherit pkgs;};
 
-      in {
-        # Nix script formatter
-        formatter = pkgs.alejandra;
-
-        # Development environment
-        devShells.default = import ./shell.nix { inherit pkgs rust; };
-      });
+      # Output package
+      packages.default = pkgs.callPackage ./. {inherit pkgs crane;};
+    });
+    # // {
+    #   # NixOS module (deployment)
+    #   nixosModules.bot = import ./module.nix self;
+    # };
 }

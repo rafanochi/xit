@@ -447,6 +447,7 @@ name = "gtk-rust-template"
 version = "0.1.0"
 dependencies = [
  "gettext-rs",
+ "gtk4",
  "relm4",
  "relm4-components",
  "tracing",

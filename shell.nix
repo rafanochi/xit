@@ -10,11 +10,12 @@
   ...
 }: let
   # Manifest via Cargo.toml
-  manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
+  # manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
 in
   pkgs.stdenv.mkDerivation {
-    name = "${manifest.name}-dev";
-
+    # name = "${manifest.name}-dev";
+    name = "relm4-minimal";
+    
     # Compile time dependencies
     nativeBuildInputs = with pkgs; [
       # Hail the Nix
@@ -37,7 +38,6 @@ in
 
       # Gnome related
       gtk4
-      meson
       ninja
       pango
       parted

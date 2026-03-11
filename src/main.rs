@@ -3,7 +3,7 @@ use gtk::{Application, glib};
 use gtk::ApplicationWindow;
 use gtk::Button;
 
-const APP_ID: &str = "org.gtk_rs.Hello";
+const APP_ID: &str = "me.rafanochi.xit";
 
 fn main() -> glib::ExitCode {
     let app = Application::builder().application_id(APP_ID).build();

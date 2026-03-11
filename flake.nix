@@ -8,31 +8,50 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = { flake-utils, naersk, nixpkgs, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      flake-utils,
+      naersk,
+      nixpkgs,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = (import nixpkgs) {
           inherit system;
         };
 
-        naersk' = pkgs.callPackage naersk {};
+        naersk' = pkgs.callPackage naersk { };
 
-      in {
-        # For `nix build` & `nix run`:
+      in
+      {
+
+        formatter = pkgs.nixfmt-tree;
+        # For `nix build` & `nixrun`:
         packages.default = naersk'.buildPackage {
           src = ./.;
           nativeBuildInputs = with pkgs; [
-              pkg-config
-              gtk4
-              libadwaita
-              meson
-              desktop-file-utils
+            pkg-config
+            gtk4
+            libadwaita
+            meson
+            desktop-file-utils
+          ];
+
+          buildInputs = with pkgs; [
+            pkg-config
           ];
         };
 
         # For `nix develop`:
         devShell = pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [ rustc cargo nixd rust-analyzer ];
+          nativeBuildInputs = with pkgs; [
+            rustc
+            cargo
+            nixd
+            rust-analyzer
+          ];
         };
       }
     );

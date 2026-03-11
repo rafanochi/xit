@@ -12,3 +12,5 @@
 /.vscode
 .flatpak-builder/
 .direnv
+result
+result/

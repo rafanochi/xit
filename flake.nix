@@ -1,34 +1,39 @@
 {
-  description = "A beginning of an awesome project bootstrapped with github:bleur-org/templates";
-
   inputs = {
-    # Stable for keeping thins clean
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-
-    # Fresh and new for testing
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-
-    # The flake-utils library
     flake-utils.url = "github:numtide/flake-utils";
+    naersk = {
+      url = "github:nix-community/naersk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
-  # @ inputs
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {inherit system;};
-    in {
-      # Nix script formatter
-      formatter = pkgs.alejandra;
+  outputs = { flake-utils, naersk, nixpkgs, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = (import nixpkgs) {
+          inherit system;
+        };
 
-      # Development environment
-      devShells.default = import ./shell.nix {inherit pkgs;};
+        naersk' = pkgs.callPackage naersk {};
 
-      # Output package
-      packages.default = pkgs.callPackage ./. {inherit pkgs;};
-    });
+      in {
+        # For `nix build` & `nix run`:
+        packages.default = naersk'.buildPackage {
+          src = ./.;
+          nativeBuildInputs = with pkgs; [
+              pkg-config
+              gtk4
+              libadwaita
+              meson
+              desktop-file-utils
+          ];
+        };
+
+        # For `nix develop`:
+        devShell = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [ rustc cargo nixd rust-analyzer ];
+        };
+      }
+    );
 }
